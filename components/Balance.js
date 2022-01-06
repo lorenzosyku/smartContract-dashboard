@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import abi from "./abi.json";
+import Transactions from "./Transactions";
+import Loader from "./Loader";
 
 
 function Balance() {
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [contractListened, setContractListened] = useState();
   const [balance, setBalance] = useState({
     address: '-',
     balance: '-'
@@ -16,6 +20,38 @@ function Balance() {
     tokenSymbol: "-",
     totalSupply: "-"
   });
+
+  useEffect(() => {
+    if(contractInfo.address !== '-'){
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const erc20 = new ethers.Contract(
+        contractInfo.address,
+        abi,
+        provider
+      );
+
+      erc20.on("Transfer", (from, to, amount, event)=>{
+        console.log(from, to, amount, event);
+        setIsLoading(false);
+        setTrxList((currentTrx)=>[
+          ...currentTrx,
+          {
+            txHash: event.trancacionHash,
+            from,
+            to,
+            amount: String(amount)
+          }
+        ]);
+      });
+      setContractListened(erc20);
+      
+
+      return () => {
+        contractListened.removeAllListeners();
+      };
+    };
+
+  }, [contractInfo.address])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +65,7 @@ function Balance() {
     const totalSupply = await erc20.totalSupply();
     
     setContractInfo({
-      address: erc20.get("addr"),
+      address: data.get("addr"),
       tokenName,
       tokenSymbol,
       totalSupply
@@ -50,16 +86,24 @@ function Balance() {
     })
   }
 
-  const handleTransfer = () => {
+  const handleTransfer = async (e) => {
+    e.preventDefault();
 
+    const data = new FormData(e.target);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = await provider.getSigner();
+    const erc20 = new ethers.Contract(contractInfo.address, abi, signer);
+    await erc20.transfer(data.get("recipient"), data.get("amount"));
+    setIsLoading(true);
   }
 
 
   return (
-    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-2 shadow-lg mx-auto rounded-xl m-30">
       <div>
         <form className="m-4" onSubmit={handleSubmit}>
-          <div className="credit-card w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl bg-white">
+          <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
               <h1 className="text-xl font-semibold text-gray-700 text-center">
                 Read from smart contract
@@ -69,7 +113,7 @@ function Balance() {
                   <input
                     type="text"
                     name="addr"
-                    className="input input-bordered block w-full focus:ring focus:outline-none"
+                    className="block w-full focus:ring focus:outline-none"
                     placeholder="ERC20 contract address"
                   />
                 </div>
@@ -78,7 +122,7 @@ function Balance() {
             <footer className="p-4">
               <button
                 type="submit"
-                className="btn btn-primary submit-button focus:ring focus:outline-none w-full"
+                className="bg-cyan-700 rounded-lg  text-white focus:ring focus:outline-none w-full"
               >
                 Get token info
               </button>
@@ -86,19 +130,19 @@ function Balance() {
             <div className="px-4">
               <div className="overflow-x-auto">
                 <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Symbol</th>
-                      <th>Total supply</th>
+                  <thead className="bg-gray-50">
+                    <tr className="whitespace-nowrap">
+                      <th className="px-6 py-2 text-xs text-gray-500">Name</th>
+                      <th className="px-6 py-2 text-xs text-gray-500">Symbol</th>
+                      <th className="px-6 py-2 text-xs text-gray-500">Total supply</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      {/*<th>{contractInfo.tokenName}</th>
-                      <td>{contractInfo.tokenSymbol}</td>
-                      <td>{String(contractInfo.totalSupply)}</td>
-                      <td>{contractInfo.deployedAt}</td>*/}
+                  <tbody className="bg-white">
+                    <tr className="whitespace-nowrap">
+                      <th className="px-6 py-4 text-sm text-gray-500">{contractInfo.tokenName}</th>
+                      <td className="px-6 py-4 text-sm text-gray-500">{contractInfo.tokenSymbol}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{String(contractInfo.totalSupply)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{contractInfo.deployedAt}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -108,7 +152,7 @@ function Balance() {
               <button
                 onClick={getMyBalance}
                 type="submit"
-                className="btn btn-primary submit-button focus:ring focus:outline-none w-full"
+                className="bg-cyan-700 rounded-lg focus:ring focus:outline-none w-full text-white"
               >
                 Get my balance
               </button>
@@ -116,16 +160,16 @@ function Balance() {
             <div className="px-4">
               <div className="overflow-x-auto">
                 <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Address</th>
-                      <th>Balance</th>
+                  <thead className="bg-gray-50">
+                    <tr className="whitespace-nowrap">
+                      <th className="px-6 py-2 text-xs text-gray-500">Address</th>
+                      <th className="px-6 py-2 text-xs text-gray-500">Balance</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      {/*<th>{balanceInfo.address}</th>
-                      <td>{balanceInfo.balance}</td>*/}
+                    <tr className="whitespace-nowrap">
+                      <th className="px-6 py-4 text-sm text-gray-500">{balance.address}</th>
+                      <td className="px-6 py-4 text-sm text-gray-500">{balance.balance}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -133,7 +177,7 @@ function Balance() {
             </div>
           </div>
         </form>
-        <div className="m-4 credit-card w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl bg-white">
+        <div className="m-4 w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-lg bg-white">
           <div className="mt-4 p-4">
             <h1 className="text-xl font-semibold text-gray-700 text-center">
               Write to contract
@@ -144,7 +188,7 @@ function Balance() {
                 <input
                   type="text"
                   name="recipient"
-                  className="input input-bordered block w-full focus:ring focus:outline-none"
+                  className="block w-full focus:ring focus:outline-none"
                   placeholder="Recipient address"
                 />
               </div>
@@ -152,14 +196,14 @@ function Balance() {
                 <input
                   type="text"
                   name="amount"
-                  className="input input-bordered block w-full focus:ring focus:outline-none"
+                  className="block w-full focus:ring focus:outline-none"
                   placeholder="Amount to transfer"
                 />
               </div>
               <footer className="p-4">
                 <button
                   type="submit"
-                  className="btn btn-primary submit-button focus:ring focus:outline-none w-full"
+                  className="bg-cyan-700 focus:ring focus:outline-none w-full rounded-xl text-white"
                 >
                   Transfer
                 </button>
@@ -169,11 +213,14 @@ function Balance() {
         </div>
       </div>
       <div>
-        <div className="m-4 credit-card w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl bg-white">
+        <div className="m-4 w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl bg-white">
           <div className="mt-4 p-4">
             <h1 className="text-xl font-semibold text-gray-700 text-center">
               Recent transactions
             </h1>
+            {isLoading ? (<Loader/>) : (<div className="shadow-lg mx-auto rounded-xl bg-white">
+              <Transactions trxList={trxList} />
+            </div>)}
             
           </div>
         </div>
