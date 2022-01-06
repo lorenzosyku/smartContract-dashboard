@@ -36,7 +36,7 @@ function Balance() {
         setTrxList((currentTrx)=>[
           ...currentTrx,
           {
-            txHash: event.trancacionHash,
+            txHash: event.transactionHash,
             from,
             to,
             amount: String(amount)
@@ -106,7 +106,7 @@ function Balance() {
           <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
               <h1 className="text-xl font-semibold text-gray-700 text-center">
-                Read from smart contract
+                Read from smart contract(RINKEBY TESTNET)
               </h1>
               <div className="">
                 <div className="my-3">
@@ -124,7 +124,7 @@ function Balance() {
                 type="submit"
                 className="bg-cyan-700 rounded-lg  text-white focus:ring focus:outline-none w-full"
               >
-                Get token info
+                Get token info(RINKEBY TESTNET)
               </button>
             </footer>
             <div className="px-4">
@@ -154,7 +154,7 @@ function Balance() {
                 type="submit"
                 className="bg-cyan-700 rounded-lg focus:ring focus:outline-none w-full text-white"
               >
-                Get my balance
+                Get my balance(RINKEBY TESTNET)
               </button>
             </div>
             <div className="px-4">
@@ -180,7 +180,7 @@ function Balance() {
         <div className="m-4 w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-lg bg-white">
           <div className="mt-4 p-4">
             <h1 className="text-xl font-semibold text-gray-700 text-center">
-              Write to contract
+              Write to contract(RINKEBY TESTNET)
             </h1>
 
             <form onSubmit={handleTransfer}>
@@ -205,7 +205,7 @@ function Balance() {
                   type="submit"
                   className="bg-cyan-700 focus:ring focus:outline-none w-full rounded-xl text-white"
                 >
-                  Transfer
+                  Transfer(RINKEBY TESTNET)
                 </button>
               </footer>
             </form>
