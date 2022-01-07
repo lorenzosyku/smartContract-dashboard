@@ -1,9 +1,10 @@
 function Transactions({trxList}) {
   
   if (trxList.length === 0) return null;
+
   return (
     <>
-      {trxList.map((item) => (
+      {trxList.reverse().map((item) => (
         <div key={item.txHash} className="bg-indigo-500 text-xs text-gray-50 mt-5 rounded-xl py-2 px-4">
           <div>
             <p>From: {item.from}</p>

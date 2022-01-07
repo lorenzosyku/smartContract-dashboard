@@ -3,10 +3,12 @@ import { ethers } from "ethers";
 import abi from "./abi.json";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
+import ErrorMessage from "./errorMessage";
 
 
 function Balance() {
 
+  const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [contractListened, setContractListened] = useState();
   const [balance, setBalance] = useState({
@@ -60,9 +62,18 @@ function Balance() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const erc20 = new ethers.Contract(data.get("addr"), abi, provider);
 
-    const tokenName = await erc20.name();
-    const tokenSymbol = await erc20.symbol();
-    const totalSupply = await erc20.totalSupply();
+    const tokenName = await erc20.name().catch(err => {
+      console.log(err);
+      setMessage(err);
+    });
+    const tokenSymbol = await erc20.symbol().catch(err => {
+      console.log(err);
+      setMessage(err);
+    });
+    const totalSupply = await erc20.totalSupply().catch(err => {
+      console.log(err);
+      setMessage(err);
+    });
     
     setContractInfo({
       address: data.get("addr"),
@@ -102,6 +113,7 @@ function Balance() {
   return (
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 shadow-lg mx-auto rounded-xl m-30">
       <div>
+        <ErrorMessage message={message}/>
         <form className="m-4" onSubmit={handleSubmit}>
           <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
@@ -218,8 +230,8 @@ function Balance() {
             <h1 className="text-xl font-semibold text-gray-700 text-center">
               Recent transactions
             </h1>
-            {isLoading ? (<Loader/>) : (<div className="shadow-lg mx-auto rounded-xl bg-white">
-              <Transactions trxList={trxList} />
+            {isLoading ? (<Loader/>) : (<div>
+              <Transactions trxList={trxList}/>
             </div>)}
             
           </div>
