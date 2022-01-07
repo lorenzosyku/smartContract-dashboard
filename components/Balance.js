@@ -8,6 +8,7 @@ import ErrorMessage from "./errorMessage";
 
 function Balance() {
 
+  const [hasError, setHasError] = useState(false);
   const [message, setMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [contractListened, setContractListened] = useState();
@@ -24,34 +25,35 @@ function Balance() {
   });
 
   useEffect(() => {
-    if(contractInfo.address !== '-'){
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const erc20 = new ethers.Contract(
-        contractInfo.address,
-        abi,
-        provider
-      );
 
-      erc20.on("Transfer", (from, to, amount, event)=>{
-        console.log(from, to, amount, event);
-        setIsLoading(false);
-        setTrxList((currentTrx)=>[
-          ...currentTrx,
-          {
-            txHash: event.transactionHash,
-            from,
-            to,
-            amount: String(amount)
-          }
-        ]);
-      });
-      setContractListened(erc20);
-      
+      if(contractInfo.address !== '-'){
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const erc20 = new ethers.Contract(
+          contractInfo.address,
+          abi,
+          provider
+        );
 
-      return () => {
-        contractListened.removeAllListeners();
+        erc20.on("Transfer", (from, to, amount, event)=>{
+          console.log(from, to, amount, event);
+          setIsLoading(false);
+          setTrxList((currentTrx)=>[
+            ...currentTrx,
+            {
+              txHash: event.transactionHash,
+              from,
+              to,
+              amount: String(amount)
+            }
+          ]);
+        });
+        setContractListened(erc20);
+
+
+        return () => {
+          contractListened.removeAllListeners();
+        };
       };
-    };
 
   }, [contractInfo.address])
 
@@ -60,60 +62,77 @@ function Balance() {
 
     const data = new FormData(e.target);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const erc20 = new ethers.Contract(data.get("addr"), abi, provider);
 
-    const tokenName = await erc20.name().catch(err => {
-      console.log(err);
-      setMessage(err);
-    });
-    const tokenSymbol = await erc20.symbol().catch(err => {
-      console.log(err);
-      setMessage(err);
-    });
-    const totalSupply = await erc20.totalSupply().catch(err => {
-      console.log(err);
-      setMessage(err);
-    });
+    try {
+      const erc20 = new ethers.Contract(data.get("addr"), abi, provider);
+      console.log(erc20)
+      const tokenName = await erc20.name();
+      const tokenSymbol = await erc20.symbol();
+      const totalSupply = await erc20.totalSupply();
+
+      setContractInfo({
+        address: data.get("addr"),
+        tokenName,
+        tokenSymbol,
+        totalSupply
+      });
+    } catch (error) {
+      console.error(error);
+      setMessage('CONTRACT ADDRESS INVALID!');
+      setHasError(true);
+    }
     
-    setContractInfo({
-      address: data.get("addr"),
-      tokenName,
-      tokenSymbol,
-      totalSupply
-    })
   }
 
   const getMyBalance = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const erc20 = new ethers.Contract(contractInfo.address, abi, provider);
-    const signer = await provider.getSigner();
-    const signerAddress = await signer.getAddress();
-    const balInfo = await erc20.balanceOf(signerAddress);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const erc20 = new ethers.Contract(contractInfo.address, abi, provider);
+      const signer = await provider.getSigner();
+      const signerAddress = await signer.getAddress();
+      const balInfo = await erc20.balanceOf(signerAddress);
 
-    setBalance({
-      address: signerAddress,
-      balance: String(balInfo)
-    })
+      setBalance({
+        address: signerAddress,
+        balance: String(balInfo)
+      });
+    } catch (error) {
+      console.error(error);
+      setMessage('CONTRACT ADDRESS INVALID!');
+      setHasError(true);
+    }
+    
   }
 
   const handleTransfer = async (e) => {
     e.preventDefault();
 
     const data = new FormData(e.target);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
-    const erc20 = new ethers.Contract(contractInfo.address, abi, signer);
-    await erc20.transfer(data.get("recipient"), data.get("amount"));
-    setIsLoading(true);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const erc20 = new ethers.Contract(contractInfo.address, abi, signer);
+      await erc20.transfer(data.get("recipient"), data.get("amount"));
+      setIsLoading(true); 
+      
+    } catch (error) {
+      console.error(error);
+      setMessage('EITHER THE AMOUNT OR THE RECIPIENT ADDRESS ARE INVALID!');
+      setHasError(true);
+    }
+    
   }
 
 
   return (
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 shadow-lg mx-auto rounded-xl m-30">
       <div>
-        <ErrorMessage message={message}/>
+        <div className="">
+          {hasError && <ErrorMessage message={message} setHasError={setHasError}/>}
+        </div>
+        
         <form className="m-4" onSubmit={handleSubmit}>
           <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
@@ -228,7 +247,7 @@ function Balance() {
         <div className="m-4 w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl bg-white">
           <div className="mt-4 p-4">
             <h1 className="text-xl font-semibold text-gray-700 text-center">
-              Recent transactions
+              Recent transactions on the RINKEBY TESTNET
             </h1>
             {isLoading ? (<Loader/>) : (<div>
               <Transactions trxList={trxList}/>

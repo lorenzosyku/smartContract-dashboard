@@ -1,4 +1,4 @@
-export default function ErrorMessage({ message }) {
+export default function ErrorMessage({ message, setHasError }) {
   if (!message) return null;
 
   return (
@@ -18,6 +18,7 @@ export default function ErrorMessage({ message }) {
           ></path>
         </svg>
         <label>{message}</label>
+        <button onClick={()=>{setHasError(false)}}>ok</button>
       </div>
     </div>
   );
