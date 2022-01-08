@@ -78,7 +78,7 @@ function Balance() {
       });
     } catch (error) {
       console.error(error);
-      setMessage('CONTRACT ADDRESS INVALID!');
+      setMessage('Contract Address Invalid!');
       setHasError(true);
     }
     
@@ -99,7 +99,7 @@ function Balance() {
       });
     } catch (error) {
       console.error(error);
-      setMessage('CONTRACT ADDRESS INVALID!');
+      setMessage('Contract Address Invalid!');
       setHasError(true);
     }
     
@@ -119,7 +119,7 @@ function Balance() {
       
     } catch (error) {
       console.error(error);
-      setMessage('EITHER THE AMOUNT OR THE RECIPIENT ADDRESS ARE INVALID!');
+      setMessage('Either the amount or the recipient address are invalid!');
       setHasError(true);
     }
     
@@ -129,11 +129,12 @@ function Balance() {
   return (
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 shadow-lg mx-auto rounded-xl m-30">
       <div>
-        <div className="">
-          {hasError && <ErrorMessage message={message} setHasError={setHasError}/>}
-        </div>
+        
         
         <form className="m-4" onSubmit={handleSubmit}>
+          <div className="">
+            {hasError && <ErrorMessage message={message} setHasError={setHasError}/>}
+          </div>
           <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
               <h1 className="text-xl font-semibold text-gray-700 text-center">
