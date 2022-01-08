@@ -3,14 +3,19 @@ import { ethers } from "ethers";
 import abi from "./abi.json";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
-import ErrorMessage from "./errorMessage";
+import MissingContract from "./MissingContract";
+import MissingParams from "./MissingParams"
 
 
 function Balance() {
 
-  const [hasError, setHasError] = useState(false);
+  const [missingContract, setMissingContract] = useState(false);
+  const [missingParams, setMissingParams] = useState(false);
   const [message, setMessage] = useState(null);
+  const [transfermsg, setTransfermsg] = useState(null)
+
   const [isLoading, setIsLoading] = useState(false);
+
   const [contractListened, setContractListened] = useState();
   const [balance, setBalance] = useState({
     address: '-',
@@ -78,11 +83,12 @@ function Balance() {
       });
     } catch (error) {
       console.error(error);
-      setMessage('Contract Address Invalid!');
-      setHasError(true);
-    }
+
+      setMessage('You need to specify the Contract Address first in order to get the general info about the contract or to check your balance!');
+      setMissingContract(true);
+    };
     
-  }
+  };
 
   const getMyBalance = async () => {
     try {
@@ -99,11 +105,12 @@ function Balance() {
       });
     } catch (error) {
       console.error(error);
-      setMessage('Contract Address Invalid!');
-      setHasError(true);
-    }
+
+      setMessage('You need to specify the Contract Address first in order to get the general info about the contract or to check your balance');
+      setMissingContract(true);
+    };
     
-  }
+  };
 
   const handleTransfer = async (e) => {
     e.preventDefault();
@@ -119,28 +126,24 @@ function Balance() {
       
     } catch (error) {
       console.error(error);
-      setMessage('Either the amount or the recipient address are invalid!');
-      setHasError(true);
-    }
+      setTransfermsg('Either the amount or the recipient address are invalid!');
+      setMissingParams(true);
+    };
     
-  }
+  };
 
 
   return (
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 shadow-lg mx-auto rounded-xl m-30">
       <div>
-        
-        
         <form className="m-4" onSubmit={handleSubmit}>
-          <div className="">
-            {hasError && <ErrorMessage message={message} setHasError={setHasError}/>}
-          </div>
+          
           <div className="w-full lg:w-3/4 sm:w-auto shadow-lg mx-auto rounded-xl ">
             <main className="mt-4 p-4">
-              <h1 className="text-xl font-semibold text-gray-700 text-center">
+              <h1 className="text-xl font-semibold  text-gray-700 text-center">
                 Read from smart contract(RINKEBY TESTNET)
               </h1>
-              <div className="">
+              <div >
                 <div className="my-3">
                   <input
                     type="text"
@@ -154,10 +157,13 @@ function Balance() {
             <footer className="p-4">
               <button
                 type="submit"
-                className="bg-cyan-700 rounded-lg  text-white focus:ring focus:outline-none w-full"
+                className="bg-cyan-700 rounded-lg text-white focus:ring focus:outline-none w-full"
               >
                 Get token info(RINKEBY TESTNET)
               </button>
+              <div className="">
+                {missingContract && <MissingContract message={message} setMessage={setMessage} setMissingContract={setMissingContract}/>}
+              </div>
             </footer>
             <div className="px-4">
               <div className="overflow-x-auto">
@@ -188,6 +194,9 @@ function Balance() {
               >
                 Get my balance(RINKEBY TESTNET)
               </button>
+              <div className="">
+                {missingContract && <MissingContract message={message} setMessage={setMessage} setMissingContract={setMissingContract}/>}
+              </div>
             </div>
             <div className="px-4">
               <div className="overflow-x-auto">
@@ -239,6 +248,9 @@ function Balance() {
                 >
                   Transfer(RINKEBY TESTNET)
                 </button>
+                <div className="">
+                  {missingParams && <MissingParams transfermsg={transfermsg} setMessage={setMessage} setMissingParams={setMissingParams}/>}
+                </div>
               </footer>
             </form>
           </div>

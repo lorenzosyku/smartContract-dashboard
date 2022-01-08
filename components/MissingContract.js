@@ -1,4 +1,4 @@
-export default function ErrorMessage({ message, setHasError }) {
+export default function ErrorMessage({ message, setMissingContract }) {
   if (!message) return null;
 
   return (
@@ -9,9 +9,9 @@ export default function ErrorMessage({ message, setHasError }) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <div className="ext-center space-y-2 sm:text-left pl-7">
-          <label className="text-gray-500">{message}</label>
-          <button className="px-4 m-2 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={()=>{setHasError(false)}}>Understood</button>
+        <div className="ext-center space-y-2 sm:text-left pl-5">
+          <label className="text-gray-500 ">{message}</label>
+          <button className="px-4 m-2 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={()=>{setMissingContract(false)}}>Understood</button>
         </div>
         
       </div>
